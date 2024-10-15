@@ -6,6 +6,8 @@ from discord.ext import commands
 import unitcard
 from convertDeckCode import convertDeckCode
 
+# dictionaries 'server_id_to_name' and 'available_commands_by_server' go here
+
 command_descriptions = {
 	"listservers": "Returns a list of IDs of servers/guilds the bot is present within.",
 	"convert": "Converts a REDFOR deck code for a both-factions nation to a BLUFOR deck code, and vice versa, for compatible nations in the server's affiliated WG:RD mod.",
