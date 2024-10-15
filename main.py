@@ -6,23 +6,6 @@ from discord.ext import commands
 import unitcard
 from convertDeckCode import convertDeckCode
 
-server_id_to_name = {  # map Server Names to server IDs
-	304436901165662209: "Bootcamp",
-	330318123964039190: "WG1991",
-	811338519141810257: "Unofficial Patch",
-	903614488928997438: "Annihilation",
-	951544203530350622: "Blitzwar Community",
-	1056769011779641355: "Asia In Conflict",
-	1090841670574166276: "Testing server",
-	1123483010671591558: "Redder Dragoner",
-}  # TODO: store server permissions data in separate file, or dynamically populate upon running
-
-available_commands_by_server = {
-	"Testing server": ["listservers", "bat" "unit"],
-	"WG1991": [],
-	"Blitzwar Community": ["convert"],
-}  # add to this as the bot is added to more servers
-
 command_descriptions = {
 	"listservers": "Returns a list of IDs of servers/guilds the bot is present within.",
 	"convert": "Converts a REDFOR deck code for a both-factions nation to a BLUFOR deck code, and vice versa, for compatible nations in the server's affiliated WG:RD mod.",
