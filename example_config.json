@@ -1,0 +1,26 @@
+{
+	"TOKEN": "bot token goes here",
+	"SERVERS": {
+		"first server's ID": [
+			"first server's name",
+			"foo",
+			"bar",
+			"INFO: SERVERS category defines valid servers for this instance of the bot to operate in, and which bot commands are available in that server",
+			"INFO:"
+		],
+		"second server ID": [
+			"second server's name",
+			"foo"
+		],
+		"third server ID": [
+			"third server's name",
+			"bar"
+		]
+	},
+	"USERS": {
+		"First user ID": "username (for developer's reference only)",
+		"Second user ID": "username",
+		"INFO: this category defines privileged/'admin' users": "privileged users have exclusive access to certain bot commands",
+		"INFO: exclusive commands may be used to update the above SERVERS category during runtime, or update flag/csv files used by the bot": "not yet implemented"
+	}
+}

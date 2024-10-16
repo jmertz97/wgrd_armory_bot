@@ -174,3 +174,4 @@ vanilla/weaponData.csv
 formatData.py
 local_test.py
 *.json
+!example_config.json
