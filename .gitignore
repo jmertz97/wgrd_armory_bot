@@ -160,3 +160,17 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+/.idea
+bwc/countryData.csv
+bwc/interface_outgame.dic
+*.txt
+bwc/unitData.csv
+bwc/weaponData.csv
+bwc/unites.dic
+vanilla/countryData.csv
+*.dic
+vanilla/unitData.csv
+vanilla/weaponData.csv
+formatData.py
+local_test.py
+*.json
