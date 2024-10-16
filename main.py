@@ -54,7 +54,7 @@ def commandAvailableInServer(ctx):
 		else:
 			print(f"User '{ctx.message.author.name}' attempted to invoke command '!{ctx.command}' in server '{server}'")
 	else:
-		print(f"Server '{ctx}' not recognized")
+		print(f"Server '{ctx.message.guild.id}' not recognized")
 	return False
 
 
