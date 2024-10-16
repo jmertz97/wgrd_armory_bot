@@ -8,11 +8,10 @@ def convertDeckCode(parg, server):
 	elif server in ("Blitzwar Community", "Testing server"):
 		countries_nato, countries_pact, nato_specials, pact_specials = countries_nato_bwc, countries_pact_bwc, nato_specials_bwc, pact_specials_bwc
 	else:
-		return
+		return False, "Convert command has not been initialized for this server."
 	t = str(parg).split(" ")[0]
 	if not t.startswith("@") or t == "@":
-		print("invalid argument - no deck code")
-		return
+		return False, "Invalid or no deckcode provided"
 	iCode = BitArray(bytes=base64.b64decode(t.strip("@").encode("ascii"))).bin  # strip leading @, convert to bits
 	# begin parsing the data
 	redfor = int(iCode[0:2], 2)  # if nation is redfor or not
@@ -21,7 +20,7 @@ def convertDeckCode(parg, server):
 	# finish validation here and initialize output string
 	if nation >= max(len(countries_nato), len(countries_pact)):
 		# if the nation code matches the non-national deck value
-		return "Can only convert national decks from valid nations"
+		return False, "Can only convert national decks from valid nations"
 	elif redfor and countries_pact[nation] in countries_nato:
 		# initialize deckstring as blufor, the country's blufor code, and non-coalition
 		iCodeReadable = ["00", bin(nation).removeprefix("0b").zfill(5)]  # testing output
@@ -42,9 +41,9 @@ def convertDeckCode(parg, server):
 		ofac = "REDFOR :red_square:"
 	else:
 		if redfor:
-			return "Cannot convert " + countries_pact[nation].split(' ')[0] + " to BLUFOR!"
+			return False, "Cannot convert " + countries_pact[nation].split(' ')[0] + " to BLUFOR!"
 		else:
-			return "Cannot convert " + countries_nato[nation].split(' ')[0] + " to REDFOR!"
+			return False, "Cannot convert " + countries_nato[nation].split(' ')[0] + " to REDFOR!"
 	oCodeHeader += iCode[7:17]  # spec, era remain unchanged
 	# number of double transport cards
 	num2Tcards = int(iCode[17:21], 2)  # can convert to int straight away since this num doesn't change

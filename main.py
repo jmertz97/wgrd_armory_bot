@@ -1,12 +1,28 @@
+import json
 import discord
 import os
-from dotenv import load_dotenv
+
 from discord.ext import commands
 
 import unitcard
 from convertDeckCode import convertDeckCode
 
-# dictionaries 'server_id_to_name' and 'available_commands_by_server' go here
+with open("config.json") as json_file:
+	config = json.load(json_file)
+
+DISCORD_TOKEN = config["TOKEN"]
+
+server_id_to_name, available_commands_by_server = {}, {}
+
+for server_id in config["SERVERS"]:
+	if server_id.isdigit():
+		server_id_to_name.update({int(server_id): config["SERVERS"][server_id][0]})
+		if len(config["SERVERS"][server_id]) > 1:
+			available_commands_by_server.update({config["SERVERS"][server_id][0]: config["SERVERS"][server_id][1:]})
+		else:
+			available_commands_by_server.update({config["SERVERS"][server_id][0]: []})
+
+privileged_users = {int(user_id) for user_id in config["USERS"]}
 
 command_descriptions = {
 	"listservers": "Returns a list of IDs of servers/guilds the bot is present within.",
@@ -14,8 +30,6 @@ command_descriptions = {
 	"unit": "Returns the statcard for a unit in image form."
 }
 
-load_dotenv()
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 # sets intents for the bot
 intents = discord.Intents.all()
 
@@ -38,15 +52,29 @@ def commandAvailableInServer(ctx):
 		if server in available_commands_by_server and str(ctx.command) in available_commands_by_server[server]:
 			return True
 		else:
-			print(f"User '{ctx.message.author.name}' attempted to invoke !{ctx.command} command in server '{server}'")
+			print(f"User '{ctx.message.author.name}' attempted to invoke command '!{ctx.command}' in server '{server}'")
 	else:
 		print(f"Server '{ctx}' not recognized")
 	return False
 
 
+def privilegedUser(ctx):
+	return True if ctx.message.author.id in privileged_users else False
+
+
 @bot.event
 async def on_ready():
 	print("-------------------------------------------------------------------------\nbatbot is online")
+
+
+@bot.event
+async def on_command_error(ctx, command):
+	sender = ctx.message.author.name
+	command_ = ctx.message.content.split(' ')[0]
+	server = ctx.message.guild.id
+	if server in server_id_to_name:
+		server = server_id_to_name[server]
+	print(f"User '{sender}' attempted to invoke non-existent command '{command_}' in server '{server}'")
 
 
 @bot.command(name="listservers")
@@ -76,8 +104,7 @@ async def convertDeckcode(ctx, arg=None):
 			# await ctx.message.add_reaction('❌')
 			return
 		# await ctx.message.add_reaction('✅')
-		convertDeckCode(arg, server_id_to_name[ctx.message.guild.id])
-		await ctx.reply()
+		await ctx.reply(convertDeckCode(arg, server_id_to_name[ctx.message.guild.id])[1])
 
 
 @bot.command(name="unit")
