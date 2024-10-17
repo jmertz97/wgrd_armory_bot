@@ -228,20 +228,20 @@ countries_nato_vanilla = ["USA :flag_us:", "United Kingdom :flag_gb:", "France :
 						  "Canada :flag_ca:", "Denmark :flag_dk:", "Sweden :flag_se:", "Norway :flag_no:",
 						  "ANZAC :flag_au::flag_nz:", "Japan :flag_jp:", "South Korea :flag_kr:",
 						  "Netherlands :flag_nl:", "Israel :flag_il:", None, None,
-						  "South Africa <:flag_xz:1226787703358619729>"]
-countries_pact_vanilla = ["East Germany <:flag_od:1091901486264504392>", "USSR <:flag_su:1091901283981611018>",
+						  "South Africa <:flag_xz:1296533707255058473>"]
+countries_pact_vanilla = ["East Germany <:flag_ddr:1296533693640478741>", "USSR <:flag_su:1296533718856634489>",
 						  "Poland :flag_pl:", "Czechoslovakia :flag_cz:", "China :flag_cn:", "North Korea :flag_kp:",
-						  "Finland :flag_fi:", "Yugoslavia <:flag_yu:1091837130424197120>", None]
+						  "Finland :flag_fi:", "Yugoslavia <:flag_yu:1296533731095351326>", None]
 
 # 1991
 countries_nato_1991 = ["USA :flag_us:", "United Kingdom :flag_gb:", "France :flag_fr:", "West Germany :flag_de:",
 					   "Denmark :flag_dk:", "Sweden :flag_se:", "Norway :flag_no:",
 					   "ANZMYS :flag_au::flag_nz::flag_sg::flag_my:", "Japan :flag_jp:", "South Korea :flag_kr:",
 					   "Benelux :flag_be::flag_nl::flag_lu:", "Israel :flag_il:", "Finland :flag_fi:",
-					   "Yugoslavia <:flag_yu:1091837130424197120>"]
-countries_pact_1991 = ["East Germany <:flag_od:1091901486264504392>", "USSR <:flag_su:1091901283981611018>",
+					   "Yugoslavia <:flag_yu:1296533731095351326>"]
+countries_pact_1991 = ["East Germany <:flag_ddr:1296533693640478741>", "USSR <:flag_su:1296533718856634489>",
 					   "Poland :flag_pl:", "Czechoslovakia :flag_cz:", "China :flag_cn:", "North Korea :flag_kp:",
-					   "Finland :flag_fi:", "Yugoslavia <:flag_yu:1091837130424197120>", None,
+					   "Finland :flag_fi:", "Yugoslavia <:flag_yu:1296533731095351326>", None,
 					   "South-pact :flag_hu::flag_ro::flag_bg:"]
 # BWC-mod
 countries_nato_bwc = ["United States :flag_us:", "United Kingdom :flag_gb:", "France :flag_fr:", "Germany :flag_de:",
