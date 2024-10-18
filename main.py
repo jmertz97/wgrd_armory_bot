@@ -27,15 +27,16 @@ privileged_users = {int(user_id) for user_id in config["USERS"]}
 command_descriptions = {
 	"listservers": "Returns a list of IDs of servers/guilds the bot is present within.",
 	"convert": "Converts a REDFOR deck code for a both-factions nation to a BLUFOR deck code, and vice versa, for compatible nations in the server's affiliated WG:RD mod.",
-	"unit": "Returns the statcard for a unit in image form."
+	"unit": "Returns the statcard for a unit in image form.",
+	"bat": "Returns an emoji representation of a flying mammal."
 }
 
 # sets intents for the bot
 intents = discord.Intents.all()
 
 # creates the client
-bot = commands.Bot(command_prefix='!', intents=intents)
-bot.remove_command("help")
+bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
+# bot.remove_command("help")
 
 mod_tables = {
 	"vanilla": unitcard.initializeTable(mod="vanilla", DAN="DEN", RFA="GER", JAP="JPN", ROK="SK", HOL="NL", RDA="DDR",
@@ -68,13 +69,16 @@ async def on_ready():
 
 
 @bot.event
-async def on_command_error(ctx, command):
-	sender = ctx.message.author.name
-	command_ = ctx.message.content.split(' ')[0]
-	server = ctx.message.guild.id
-	if server in server_id_to_name:
-		server = server_id_to_name[server]
-	print(f"User '{sender}' attempted to invoke non-existent command '{command_}' in server '{server}'")
+async def on_command_error(ctx, error):
+	if isinstance(error, commands.CommandNotFound):
+		sender = ctx.message.author.name
+		command_ = ctx.message.content.split(' ')[0]
+		server = ctx.message.guild.id
+		if server in server_id_to_name:
+			server = server_id_to_name[server]
+		print(f"User '{sender}' attempted to invoke non-existent command '{command_}' in server '{server}'")
+	else:
+		raise error
 
 
 @bot.command(name="listservers")
@@ -91,10 +95,21 @@ async def batEmoji(ctx):
 
 
 @bot.command(name="help")
-async def showHelp(self, ctx):
-	if ctx.message.guild.id in available_commands_by_server:
-		for cmd in available_commands_by_server[ctx.message.guild.id]:
-			print(f"!{cmd}: {command_descriptions[cmd]}")
+async def showHelp(ctx, *argv):
+	if server_id_to_name[ctx.message.guild.id] in available_commands_by_server:
+		if argv and argv[0] in available_commands_by_server[server_id_to_name[ctx.message.guild.id]]:
+			if argv[0] in command_descriptions:
+				await ctx.send(command_descriptions[argv[0]])
+			else:
+				await ctx.send("No description for this command yet")
+		else:
+			cmds = []
+			for cmd in available_commands_by_server[server_id_to_name[ctx.message.guild.id]]:
+				if cmd in command_descriptions:
+					cmds.append(f"!{cmd}: {command_descriptions[cmd]}")
+				else:
+					cmds.append(f"!{cmd}: No description for this command yet")
+			await ctx.send("```" + "\n\n".join(cmds) + "```")
 
 
 @bot.command(name="convert")
