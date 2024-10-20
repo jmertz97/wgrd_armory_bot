@@ -1,7 +1,6 @@
 import csv
 import os
 import re
-import math
 
 from unidecode import unidecode
 from PIL import Image, ImageDraw, ImageFont
@@ -58,7 +57,8 @@ def initializeTable(**kwargs):
 
 
 def createCard(unit, ut, wt, mod):
-	uk, uv1, uv2, wk = [], [], [], []
+	uk, uv1, uv2 = [], [], []
+	wk_len = 0
 	uk_pos = round(fs * 0.8)  # base position for unit data keys (leftmost column)
 	uv1_pos = uk_pos * 15  # position of the secondary/"middle" column of unit data valus (just for optics for now)
 	uv2_pos = uk_pos * 22  # position of the main column of unit data values
@@ -110,7 +110,7 @@ def createCard(unit, ut, wt, mod):
 					avail_reduced = True
 					break
 			uv2.append(f"{removeTags(ut[t]['name'])}{'*' if avail_reduced else ''}")
-			# uk.append("")
+	# uk.append("")
 
 	if u["transporterOf"]:
 		units_transported = [f"{ut[t]['name']}" for t in u["transporterOf"].split("|")]
@@ -146,6 +146,7 @@ def createCard(unit, ut, wt, mod):
 			uk[22] = "TOT"
 			uk.insert(21, "turnRadius")
 			uv1.insert(21, "")
+			# uv2.insert(21, u["turnData"] + "m")
 			uv2.insert(21, u["turnRadius"] + "m")
 			uk.insert(21, "altitude")
 			uv1.insert(21, "")
@@ -162,6 +163,9 @@ def createCard(unit, ut, wt, mod):
 			uk.insert(21, "isAmphibious")
 			uv1.insert(21, "")
 			uv2.insert(21, u["isAmphibious"])
+			# uk.insert(21, "turnRate")
+			# uv1.insert(21, "")
+			# uv2.insert(21, u["turnData"] + "  °/s")
 			uk.insert(21, "roadSpeed")
 			uv1.insert(21, "")
 			uv2.insert(21, u["roadSpeed"] + " km/h")
@@ -182,67 +186,74 @@ def createCard(unit, ut, wt, mod):
 	W = uv2_pos + uk_pos
 
 	wDatas = []
-	if u["isArmed"]:
-		wk = ["turret", "turretType", "turretSpeed", "turretFacing", "uiPosition", "ammoPool", "totalAmmo",
-			  "supplyPerShot", "salvoLength", "salvoReload", "shotReload", "simultShots", "aimTime",
-			  "noiseMalus", "muzzleVelocity", "rangeGround", "rangeHeli", "rangePlane", "rangeShip", "rangeDef",
-			  "accuracy", "stabilizer", "dispersionAngle", "dispersionRadius", "corrShotMultiplier", "isKE", "isHEAT",
-			  "AP", "HE", "radiusDamage", "suppress", "radiusSuppress", "radiusNapalm", "radiusSmoke", "isRadar", "isMissile",
-			  "isSEAD", "isFireAndForget", "missileAcceleration", "missileSpeedMax", "missileCorrInterval", "name",
-			  "typeArme"]
-		for field in u:
-			if ("TAmmunition_ID" in field) and u[field]:
-				w = wt[u[field]]
-				wData = {x: f"{u[field.replace('TAmmunition_ID', x)]}" for x in wk[0:7]}
-				wData.update({x: w[x] for x in wk[7:15]})
-				if wData["simultShots"] == "1":
-					wData.update({"simultShots": ""})
-				for x in wk[15:20]:
-					if w[f"max{x}"]:
-						maxR = w[f"max{x}"] + "m"
-						minR = (w[f"min{x}"] + " - ") if w[f"min{x}"] else ""
-					else:
-						maxR, minR = "", ""
-					wData.update({x: minR + maxR})
-				wData.update({"accuracy": f"{round(float(w['accuracy']) * 100)}%" if w["accuracy"] else ""})
-				wData.update({"stabilizer": f"{round(float(w['stabilizer']) * 100)}%" if u[
-					field.replace("TAmmunition_ID", "hasStab")] else ""})
-				wData.update({"dispersionAngle": w["dispersionAngle"] + "°"})
-				if w["dispersionMax"]:
-					maxD = w["dispersionMax"]
-					minD = (w["dispersionMin"] + " - ") if w["dispersionMin"] not in (maxD, "") else ""
-				else:
-					maxD, minD = "", ""
-				wData.update({"dispersion": minD + maxD})
-				wData.update({x: w[x] for x in wk[24:]})
+	if u["numWeapons"] != "0":  # replace with a variable for number of weapons
+		for i in range(1, int(u["numWeapons"]) + 1):
+			wData = {x: u[f"weapon{i}_{x}"] for x in
+					 ["turret", "turretType", "turretSpeed", "turretFacing", "ammoPool", "totalAmmo"]}
 
-				if wData["typeArme"] == "Main Gun":
-					if int(wData["salvoLength"]) > 1:
-						if wData["salvoLength"] == wData["totalAmmo"]:
-							wData["typeArme"] += " [AUTO]"
-						else:
-							wData["typeArme"] += " [BRST]"
+			w = wt[u[f"weapon{i}_TAmmunition_ID"]]
+			if wData["turretFacing"]:
+				wData.update({"turretFacing": wData["turretFacing"] + "°"})
+			if wData["turretSpeed"]:
+				wData.update({"turretSpeed": wData["turretSpeed"] + " °/s"})
+			wData.update({x: w[x] for x in ["supplyPerShot", "salvoLength", "simultShots"]})
+			if wData["simultShots"] == "1":
+				wData.update({"simultShots": ""})
+
+			wData.update({x: f"{w[x]}s" if w[x] else "" for x in ["salvoReload", "shotReload", "aimTime"]})
+
+			wData.update({"noiseMalus": w["noiseMalus"] if w["noiseMalus"] else "0",
+						  "muzzleVelocity": f"{round(float(w['muzzleVelocity']))} m/s"})
+
+			for x in ["rangeGround", "rangeHeli", "rangePlane", "rangeShip", "rangeDef"]:
+				if w[f"max{x}"]:
+					maxR = w[f"max{x}"] + "m"
+					minR = (w[f"min{x}"] + " - ") if w[f"min{x}"] else ""
+				else:
+					maxR, minR = "", ""
+				wData.update({x: minR + maxR})
+			wData.update({"accuracy": f"{round(float(w['accuracy']) * 100)}%" if w["accuracy"] else ""})
+			wData.update({"stabilizer": f"{round(float(w['stabilizer']) * 100)}%" if (
+						u[f"weapon{i}_hasStab"] and "stabilizer" in u and u["stabilizer"]) else ""})
+			wData.update({"dispersionAngle": w["dispersionAngle"] + "°"})
+			if w["dispersionMax"]:
+				maxD = w["dispersionMax"]
+				minD = (w["dispersionMin"] + " - ") if w["dispersionMin"] not in (maxD, "") else ""
+			else:
+				maxD, minD = "", ""
+			wData.update({"dispersionRadius": minD + maxD})
+
+			if mod != "vanilla":
+				wData.update({"corrShotMultiplier": w["corrShotMultiplier"]})
+
+			wData.update({x: w[x] for x in ["isKEorHEAT", "AP", "HE", "suppress"]})
+
+			wData.update({x: f"{w[x]}m" if w[x] else "" for x in
+						  ["radiusDamage", "radiusSuppress", "radiusNapalm", "radiusSmoke"]})
+
+			wData.update({x: w[x] for x in ["isRadar", "isMissile", "isSEAD", "isFireAndForget"]})
+
+			wData.update({"missileAcceleration": f"{round(float(w['missileAcceleration']))} m/s²" if w[
+				"missileAcceleration"] else ""})
+			wData.update(
+				{"missileSpeedMax": f"{round(float(w['missileSpeedMax']))} m/s" if w["missileSpeedMax"] else ""})
+			wData.update(
+				{"missileCorrInterval": f"{w['missileCorrInterval']}s" if w["missileCorrInterval"] else ""})
+
+			wData.update({"name": w["name"], "typeArme": w["typeArme"]})
+			if wData["typeArme"] == "Main Gun":
+				if int(wData["salvoLength"]) > 1:
+					if wData["salvoLength"] == wData["totalAmmo"]:
+						wData["typeArme"] += " [AUTO]"
 					else:
-						wData["typeArme"] += " [MAN]"
-				for tag in ("radiusDamage", "radiusSuppress", "radiusNapalm", "radiusSmoke"):
-					if wData[tag]:
-						wData.update({tag: f"{wData[tag]}m"})
-				for tag in ("muzzleVelocity", "missileSpeedMax"):
-					if wData[tag]:
-						wData.update({tag: f"{round(float(wData[tag]))} m/s"})
-				if wData["missileAcceleration"]:
-					wData.update({"missileAcceleration": f"{w['missileAcceleration']} m/s²"})
-				for tag in ("salvoReload", "shotReload", "missileCorrInterval", "aimTime"):
-					if wData[tag]:
-						wData.update({tag: f"{w[tag]}s"})
-				if wData["turretFacing"]:
-					wData.update({"turretFacing": wData["turretFacing"] + "°"})
-				if wData["turretSpeed"]:
-					wData.update({"turretSpeed": wData["turretSpeed"] + " °/s"})
-				wDatas.append(wData)
+						wData["typeArme"] += " [BRST]"
+				else:
+					wData["typeArme"] += " [MAN]"
+			wDatas.append(wData)
+		wk_len = len(wDatas[0])
 		W = wv_base + (wv_offset * (len(wDatas) - 1)) + uk_pos
 
-	H = int(vrt_offset + (ln_interval * (max(len(wk), len(uv2)) - 2)))
+	H = int(vrt_offset + (ln_interval * (max(wk_len, len(uv2)) - 2)))
 
 	# flags made custom
 	hfs = 3 * fs
@@ -332,7 +343,7 @@ def createCard(unit, ut, wt, mod):
 					font_to_use = ImageFont.truetype(font, curr_fs)
 					if j == "name":
 						font_to_use = ImageFont.truetype(fontb, curr_fs)
-						# font_to_use.set_variation_by_name(font_to_use.get_variation_names()[-1])
+					# font_to_use.set_variation_by_name(font_to_use.get_variation_names()[-1])
 					width = font_to_use.getlength(i[j])
 			elif idx == 0:
 				draw.text((wk_pos, vpos), j, font=font_to_use, fill="#FFFFFF", anchor="lm")
@@ -392,7 +403,7 @@ def getUnitcard(search_arg, **kwargs):
 		return None, None
 
 
-fs = 24  # font size - changing this will scale the entire image accordingly
+fs = 25  # font size - changing this will scale the entire image accordingly
 font = os.path.join(os.getcwd(), "fonts", "Roboto-Medium.ttf")
 fontb = os.path.join(os.getcwd(), "fonts", "Roboto-Bold.ttf")
 # fonti = os.path.join(os.getcwd(), "fonts", "Roboto-Bold.ttf")

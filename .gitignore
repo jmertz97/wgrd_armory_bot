@@ -175,3 +175,4 @@ formatData.py
 local_test.py
 *.json
 !example_config.json
+main2.py

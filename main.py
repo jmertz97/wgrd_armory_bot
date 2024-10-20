@@ -32,10 +32,9 @@ command_descriptions = {
 }
 
 # sets intents for the bot
-intents = discord.Intents.all()
 
 # creates the client
-bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all(), help_command=None)
 # bot.remove_command("help")
 
 mod_tables = {
