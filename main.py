@@ -16,8 +16,8 @@ class myClient(discord.Client):
 	async def on_ready(self):
 		await self.wait_until_ready()
 		if not self.synced:
-			for x in server_id_to_name:
-				await tree.sync(guild=discord.Object(id=int(x)))
+			for x in client.guilds:
+				await tree.sync(guild=discord.Object(id=int(x.id)))
 			self.synced = True
 
 		print("-------------------------------------------------------------------------\nbatbot is online")
