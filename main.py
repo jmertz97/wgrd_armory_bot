@@ -95,7 +95,8 @@ def privilegedUser(itc):
 			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name])
 async def listServers(itc: discord.Interaction):
 	if privilegedUser(itc):
-		print(client.guilds)
+		for x in client.guilds:
+			print(f"{x.name} ({x.id})")
 		await itc.response.send_message("Printed server list to console", ephemeral=True)  # noqa
 	else:
 		await itc.response.send_message("You do not have access to this command", ephemeral=True)  # noqa
