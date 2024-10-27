@@ -1,4 +1,3 @@
-import csv
 import os
 import re
 
@@ -22,38 +21,6 @@ def searchFilter(val):
 
 def removeTags(s):
 	return " ".join([x for x in s.split(" ") if x != '' and x[0] != '#'])
-
-
-def initializeTable(**kwargs):
-	ut, wt, cm = {}, {}, {}
-	with open(os.path.join(os.getcwd(), kwargs["mod"], cpath)) as f:
-		table = csv.DictReader(f, delimiter=',', quotechar='|')
-		for row in table:
-			if row["country"] in kwargs:
-				cm.update({row["country"]: kwargs[row["country"]]})
-			elif row["country"] == row["coalition"]:
-				cm.update({row["country"]: row["country"]})
-	firstline = True
-	with open(os.path.join(os.getcwd(), kwargs["mod"], upath), "r", newline='', encoding='utf8') as f:
-		table = csv.DictReader(f, delimiter=',', quotechar='|')
-		for row in table:
-			row.update({"": "", "\n": ""})
-			if firstline:
-				firstline = False
-			else:
-				row.update({"country": cm[row["country"]] if row["country"] in cm else row["country"]})
-				row.update({"name": row["name"].replace("'", "")})
-				ut.update({row["inst_num"]: row})
-	firstline = True
-	with open(os.path.join(os.getcwd(), kwargs["mod"], wpath), "r", newline='', encoding='utf8') as f:
-		table = csv.DictReader(f, delimiter=',', quotechar='|')
-		for row in table:
-			if firstline:
-				firstline = False
-			else:
-				wt.update({row["inst_num"]: row})
-	return {"modname": kwargs["mod"], "ut": {u: ut[u] for u in sorted(list(ut.keys()))},
-			"wt": {w: wt[w] for w in sorted(list(wt.keys()))}}
 
 
 def createCard(unit, ut, wt, mod):
@@ -352,7 +319,7 @@ def createCard(unit, ut, wt, mod):
 
 
 def getUnitcard(search_arg, **kwargs):
-	ut = kwargs["mod"]["ut"]
+	ut = kwargs["tables"]["ut"]
 	search_arg = unidecode(searchFilter(search_arg)).upper().replace("9K111", "FAGOT").replace("FUGOT", "FAGOT")
 	search_list = list(search_arg)
 	matches = {}
@@ -360,9 +327,10 @@ def getUnitcard(search_arg, **kwargs):
 	# get all possible matches
 	search_regex = ".*".join(search_list)
 	for u in ut:
-		to_match = unidecode(" ".join([searchFilter(ut[u]["name"]), ut[u]["country"], ut[u]["tab"]])).upper()
-		if u not in matches and re.search(search_regex, to_match):
-			matches.update({to_match: u})
+		if ut[u]["name"] != "FOB":  # FOBs filtered out until script properly exports FOB stats
+			to_match = unidecode(" ".join([searchFilter(ut[u]["name"]), ut[u]["country"], ut[u]["tab"]])).upper()
+			if u not in matches and re.search(search_regex, to_match):
+				matches.update({to_match: u})
 	c = len(search_list)
 	# then grab results in the desired order from within the initial match set
 	while len(matches) > len(res) < 6 and c:
@@ -397,7 +365,7 @@ def getUnitcard(search_arg, **kwargs):
 					r2[0] = f"**{r2[0]}**"
 				r2 = " ".join(r2).replace("FAGOT", "9K111")
 			res[rdx] = r2
-		img = createCard(unit, ut, kwargs["mod"]["wt"], kwargs["mod"]["modname"])
+		img = createCard(unit, ut, kwargs["tables"]["wt"], kwargs["tables"]["mod"])
 		return res, img
 	else:
 		return None, None
@@ -410,7 +378,3 @@ fontb = os.path.join(os.getcwd(), "fonts", "Roboto-Bold.ttf")
 
 dataFont = ImageFont.truetype(font, fs)
 # dataFont.set_variation_by_name(dataFont.get_variation_names()[-2])
-
-upath = "unitData_formatted.csv"
-wpath = "weaponData_formatted.csv"
-cpath = "countryData_formatted.csv"
