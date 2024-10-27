@@ -3,7 +3,6 @@ import os
 import discord
 from discord import app_commands
 
-import convertDeckCode_backup
 from initializeTables import initializeTables
 from convertDeckCode import convertDeckCode
 import unitcard
@@ -17,8 +16,10 @@ class myClient(discord.Client):
 	async def on_ready(self):
 		await self.wait_until_ready()
 		if not self.synced:
-			await tree.sync(guild=discord.Object(id=1090841670574166276))
+			for x in server_id_to_name:
+				await tree.sync(guild=discord.Object(id=int(x)))
 			self.synced = True
+
 		print("-------------------------------------------------------------------------\nbatbot is online")
 
 # async def on_command_error(ctx, error):
@@ -145,10 +146,9 @@ async def getUnit(itc: discord.Interaction, main_search: str, mod: app_commands.
 		kwargs.update({"tables": mod_tables[mod.value]})
 	res, img = unitcard.getUnitcard(main_search, **kwargs)
 	if res and img:
-		fn = f'unit.png'
+		fn = f'{itc.guild_id}.png'  # use guild id for filename to mitigate potential conflicts
 		img.save(fn, "PNG")
 		img = discord.File(fn)
-		# await ctx.message.add_reaction('✅')
 		await itc.response.send_message(file=img, content=("   " + "\n".join(res)))  # noqa
 		# os.remove(fn)
 	else:
