@@ -32,7 +32,7 @@ def convertDeckCode(code, ct, valid_units):  # valid units corresponds to 'pu'
 	# finish validation here and initialize output string
 	if country >= max(len(countries_nato), len(countries_pact)):
 		# if the nation code matches the non-national deck value
-		return "Can only convert national decks from valid nations"
+		return "Can only convert national decks from valid nations", True
 	elif str(country) in valid_countries:
 		iCodeReadable = ["00" if redfor else "01", bin(country).removeprefix("0b").zfill(5)]  # testing output
 		oCodeHeader = ("00" if redfor else "01") + bin(int(valid_countries[str(country)])).removeprefix("0b").zfill(5)
@@ -44,9 +44,10 @@ def convertDeckCode(code, ct, valid_units):  # valid units corresponds to 'pu'
 		ofac = "Blufor" if redfor else "Redfor"
 	else:
 		if redfor:
-			return f"Cannot convert {countries_pact[str(country)]} to BLUFOR!"
+			return f"Cannot convert {countries_pact[str(country)]} to BLUFOR!", True
+			# boolean for if message is ephemeral - therefore, return 'True' on invalid input and 'False' on valid input
 		else:
-			return f"Cannot convert {countries_nato[str(country)]} to REDFOR!"
+			return f"Cannot convert {countries_nato[str(country)]} to REDFOR!", True
 
 	print(oCodeHeader)
 
@@ -168,4 +169,4 @@ def convertDeckCode(code, ct, valid_units):  # valid units corresponds to 'pu'
 
 	output = f"Converted {ifac} {country} to {ofac} {diff}\n{o_deckstring}"
 	# output += f"({country.split(' ')[1]}{ifac.split(' ')[1]}:right_arrow:{ofac.split(' ')[1]}) "
-	return output
+	return output, False

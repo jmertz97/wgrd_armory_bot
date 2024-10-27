@@ -85,21 +85,23 @@ def commandAvailableInServer(ctx):
 	return False
 
 
-def privilegedUser(ctx):
-	return True if ctx.message.author.id in privileged_users else False
+def privilegedUser(itc):
+	return True if itc.user.id in privileged_users else False
 
 
 @tree.command(name="listservers",
-			  description="testing",
-			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name if
-					  "unit" in available_commands_by_server[server_id_to_name[x]]])
+			  description="Allows privileged users to print this bot's joined servers to the bot console",
+			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name])
 async def listServers(itc: discord.Interaction):
-	print(client.guilds)
-	await itc.response.send_message("printed server list to console")  # noqa
+	if privilegedUser(itc):
+		print(client.guilds)
+		await itc.response.send_message("Printed server list to console", ephemeral=True)  # noqa
+	else:
+		await itc.response.send_message("You do not have access to this command", ephemeral=True)  # noqa
 
 
 @tree.command(name="bat",
-			  description="testing",
+			  description="Returns an emoji depicting a flying mammal",
 			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name if
 					  "unit" in available_commands_by_server[server_id_to_name[x]]])
 async def batEmoji(itc: discord.Interaction):
@@ -116,32 +118,23 @@ async def showHelp(itc: discord.Interaction):
 			cmds.append(f"/{cmd}: {command_descriptions[cmd]}")
 		else:
 			cmds.append(f"/{cmd}: No description for this command yet")
-	await itc.response.send_message("```" + "\n\n".join(cmds) + "```")  # noqa
+	await itc.response.send_message("```" + "\n\n".join(cmds) + "```", ephemeral=True)  # noqa
 
 
 @tree.command(name="convert",
-			  description="testing",
+			  description="Converts applicable deckcodes from REDFOR to BLUFOR",
 			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name if
-					  "unit" in available_commands_by_server[server_id_to_name[x]]])
+					  "convert" in available_commands_by_server[server_id_to_name[x]]])
 @app_commands.choices(mod=[app_commands.Choice(name=mod, value=mod) for mod in mod_tables if mod_tables[mod]["pu"]])
 async def convert(itc: discord.Interaction, code: str, mod: app_commands.Choice[str]):
 	if code == "@" or not code.startswith("@"):
 		await itc.response.send_message("Invalid or no deckcode provided")  # noqa
 	msg = convertDeckCode(code, mod_tables[mod.value]["ct"], mod_tables[mod.value]["pu"])
-	await itc.response.send_message(msg)  # noqa
-
-
-@tree.command(name="convert_test",
-			  description="testing",
-			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name if
-					  "unit" in available_commands_by_server[server_id_to_name[x]]])
-async def convert_test(itc: discord.Interaction, code: str):
-	msg = convertDeckCode_backup.convertDeckCode(code, "Blitzwar Community")
-	await itc.response.send_message(msg[1])  # noqa
+	await itc.response.send_message(msg[0], ephemeral=(msg[1]))  # noqa
 
 
 @tree.command(name="unit",
-			  description="testing",
+			  description="Searches for a unit by name and returns an image displaying that unit's stats.",
 			  guilds=[discord.Object(id=int(x)) for x in server_id_to_name if
 					  "unit" in available_commands_by_server[server_id_to_name[x]]])
 @app_commands.choices(mod=[app_commands.Choice(name=x, value=x) for x in mod_tables])
